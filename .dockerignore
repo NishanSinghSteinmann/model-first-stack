@@ -1,0 +1,7 @@
+**/node_modules
+**/dist
+**/.build
+**/.swiftpm
+.git
+infra/compose/.env
+web/.env*

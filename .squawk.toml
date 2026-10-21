@@ -1,0 +1,6 @@
+excluded_rules = [
+  "prefer-bigint-over-int",
+  "require-statement-timeout",
+  "require-lock-timeout",
+]
+assume_in_transaction = true

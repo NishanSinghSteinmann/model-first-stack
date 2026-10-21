@@ -1,0 +1,28 @@
+releases:
+  - id: release.0-1
+    name: "0.1 · Foundation"
+    date: "2026-12-01"
+    description: Shells, generators, local stack, staging, example feature.
+    gates: [check.model, check.role-matrix, check.schema, check.quickstart]
+  - id: release.0-2
+    name: "0.2 · Organizations"
+    date: "2027-01-15"
+    description: Organizations, members and roles.
+    gates: [check.model, check.role-matrix]
+
+slices:
+  - {id: "slice.0", name: "0 · Foundation", release: release.0-1}
+  - {id: "slice.1", name: "1 · Notes (example)", release: release.0-1}
+  - {id: "slice.2", name: "2 · Organizations", release: release.0-2}
+
+features:
+  - {id: "feat.notes", name: "Personal notes", slice: "slice.1", status: "built", modules: [mod.notes], routes: [route.me.notes.list, route.me.notes.create, route.me.notes.get, route.me.notes.update], checks: [check.role-matrix, check.schema]}
+  - {id: "feat.orgs", name: "Organizations and members", slice: "slice.2", status: "planned", modules: [mod.orgs], routes: [route.orgs.get, route.orgs.members.list], checks: [check.role-matrix], description: "Planned. Set the routes and tables to wip, run make generate, implement the handlers and an access.Memberships implementation."}
+
+decisions:
+  - {id: dec.model-first, name: "The model in architecture/ is the single source of truth. Code that follows from it is generated, only domain logic is written by hand", date: "2026-10-21"}
+  - {id: dec.generate-active-only, name: "Only elements with status wip, built or verified are generated, planned elements produce nothing", date: "2026-10-21"}
+  - {id: dec.api-v1, name: "Domain routes live under /v1, only additive changes, enforced by oasdiff", date: "2026-10-21"}
+  - {id: dec.rls, name: "Every table has forced row level security, the API role never owns tables and cannot bypass RLS", date: "2026-10-21"}
+  - {id: dec.portable, name: "No cloud SDKs in the backend. Secrets arrive as environment variables, storage is S3-compatible", date: "2026-10-21"}
+  - {id: dec.no-mocks, name: "Tests run against real Postgres and S3 in containers, no mocks", date: "2026-10-21"}

@@ -1,0 +1,156 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  model:
+    name: Model and codegen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: portal/package-lock.json
+      - run: npm ci
+        working-directory: portal
+      - run: npm ci --no-audit --no-fund
+        working-directory: web
+      - run: make check
+      - run: make generate-check
+      - run: make drift
+      - name: No breaking changes in v1
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --depth=1 origin "${{ github.base_ref }}"
+          mkdir -p "$RUNNER_TEMP/oas"
+          git show "origin/${{ github.base_ref }}:contracts/openapi.yaml" > "$RUNNER_TEMP/oas/base.yaml"
+          cp contracts/openapi.yaml "$RUNNER_TEMP/oas/head.yaml"
+          docker run --rm -v "$RUNNER_TEMP/oas:/w" tufin/oasdiff:v1.33.0 breaking /w/base.yaml /w/head.yaml --fail-on ERR
+      - run: npx tsc -b && npx vite build
+        working-directory: portal
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high
+
+  licenses:
+    name: Licenses
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 24
+      - run: if [ -d web ]; then cd web && npm ci --no-audit --no-fund; fi
+      - run: tools/licenses.sh --check
+      - run: git diff --exit-code THIRD_PARTY.md || (echo "THIRD_PARTY.md is stale, run make licenses" && exit 1)
+
+  secrets:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --redact
+
+  arch-change:
+    name: Model change with decision
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - run: portal/scripts/check-arch-change.sh origin/${{ github.base_ref }}
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test -race -count=1 ./...
+      - run: go test -run='^$' -fuzz=FuzzDecodeJSON -fuzztime=15s ./internal/platform/request/
+      - run: go test -run='^$' -fuzz=FuzzVerifyNeverAcceptsGarbage -fuzztime=15s ./internal/platform/request/
+      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a
+        with:
+          version: v2.15.0
+          working-directory: backend
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - run: go run github.com/fe3dback/go-arch-lint@v1.19.0 check --project-path .
+      - run: docker build -f Dockerfile -t app:ci .
+
+  edge:
+    name: Edge (Caddy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - run: docker build -f infra/caddy/Dockerfile -t edge:ci .
+      - run: docker run --rm edge:ci caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+      - run: infra/caddy/test.sh edge:ci
+
+  infra:
+    name: Infrastructure
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform/gcp-staging
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4
+        with:
+          tofu_version: 1.13.1
+      - run: tofu fmt -check -recursive
+      - run: tofu init -backend=false
+      - run: tofu validate
+      - run: docker run --rm -v "$PWD:/src" aquasec/trivy:0.75.0 config --skip-version-check --exit-code 1 --severity CRITICAL,HIGH /src
+
+  migrations:
+    name: Migrations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 24
+      - run: npx -y squawk-cli@2.70.0 --config .squawk.toml backend/internal/platform/data/migrations/*.sql

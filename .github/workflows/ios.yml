@@ -1,0 +1,20 @@
+name: iOS
+
+on:
+  pull_request:
+    paths: ["ios/**", "contracts/openapi.yaml", "design/**", ".github/workflows/ios.yml"]
+  push:
+    branches: [main]
+    paths: ["ios/**", "contracts/openapi.yaml", "design/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  kit:
+    name: ExampleKit
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - run: swift build && swift test
+        working-directory: ios/ExampleKit

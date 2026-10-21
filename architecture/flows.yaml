@@ -1,0 +1,12 @@
+flows:
+  - id: flow.note
+    name: Create a note
+    steps: [app.web-app, shell.edge, shell.request, shell.access, route.me.notes.create, mod.notes, tbl.note]
+    description: A signed-in user creates a note. The edge filters, the request shell verifies the token and validates the body, the access shell checks self:write, Postgres stores the note under row level security.
+    stride:
+      spoofing: "Token verified against JWKS, guests cannot write."
+      tampering: "Body validated against the contract, unknown fields rejected."
+      repudiation: "Request ID in logs."
+      information_disclosure: "RLS limits every query to the owner."
+      denial_of_service: "Rate limits and body size limits at the edge."
+      elevation_of_privilege: "Rules are generated from the model and tested per role."

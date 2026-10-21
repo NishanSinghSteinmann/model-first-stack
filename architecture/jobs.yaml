@@ -1,0 +1,3 @@
+jobs:
+  - {id: "job.retention", name: "Enforce retention", module: "mod.platform", periodic: "daily 03:00", description: "Deletes data after the retention periods in database.yaml.", covers: [tbl.note, tbl.idempotency_key, tbl.audit_event, tbl.org_member], idempotent: true, max_attempts: 5, alert: alert.jobs-failed}
+  - {id: "job.export", name: "Data export (GDPR art. 15 and 20)", module: "mod.platform", description: "Collects all personal data of one user.", exports: [tbl.note, tbl.idempotency_key], idempotent: true, max_attempts: 3, alert: alert.jobs-failed}

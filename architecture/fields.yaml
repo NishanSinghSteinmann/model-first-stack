@@ -1,0 +1,3 @@
+fields:
+  - {id: "field.status", name: "status", type: "text", description: "State of a probe, for example ok or unavailable."}
+  - {id: "field.failed", name: "failed", type: "text[]", description: "Names of failed checks, never details."}

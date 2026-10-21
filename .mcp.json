@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "model": {
+      "command": "npx",
+      "args": [
+        "--prefix",
+        "portal",
+        "tsx",
+        "portal/scripts/mcp.ts"
+      ]
+    },
+    "gitbutler": {
+      "command": "but",
+      "args": [
+        "mcp",
+        "serve"
+      ]
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../node_modules/.tsc/i18n",
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../node_modules/.tsc/i18n.tsbuildinfo"
+  },
+  "include": [
+    "src"
+  ],
+  "references": []
+}

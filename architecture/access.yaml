@@ -1,0 +1,53 @@
+principal_types:
+  - {id: ptype.user, name: User, description: "Signed in with Supabase Auth."}
+  - {id: ptype.guest, name: Guest, description: "Anonymous Supabase user, can upgrade to an account later."}
+  - {id: ptype.staff, name: Staff, description: "User with a platform role, second factor required."}
+  - {id: ptype.service, name: Service, description: "Machine with a service key, always bound to exactly one organization."}
+
+roles:
+  - id: role.guest
+    name: Guest
+    scope: self
+    default_for: ptype.guest
+    grants: [perm.self:read]
+  - id: role.user
+    name: User
+    scope: self
+    default_for: ptype.user
+    grants: [perm.self:read, perm.self:write]
+  - id: role.org-owner
+    name: Owner
+    scope: org
+    grants: [perm.org:read, perm.members:manage, perm.org:settings, perm.servicekeys:manage]
+  - id: role.org-admin
+    name: Admin
+    scope: org
+    grants: [perm.org:read, perm.members:manage]
+  - id: role.org-member
+    name: Member
+    scope: org
+    grants: [perm.org:read]
+  - id: role.platform-admin
+    name: Platform admin
+    scope: platform
+    grants: [perm.orgs:verify]
+  - id: role.support
+    name: Support
+    scope: platform
+    grants: [perm.support:access]
+  - id: role.service-integration
+    name: Integration
+    scope: org
+    principal: ptype.service
+    grants: [perm.org:read, perm.integration:write]
+
+permissions:
+  - {id: "perm.self:read", name: "Read own data", sensitive: false}
+  - {id: "perm.self:write", name: "Change own data", sensitive: false}
+  - {id: "perm.org:read", name: "Read organization", sensitive: false}
+  - {id: "perm.members:manage", name: "Manage members", sensitive: true, audited: true}
+  - {id: "perm.org:settings", name: "Change organization settings", sensitive: true, step_up: true, audited: true}
+  - {id: "perm.servicekeys:manage", name: "Manage service keys", sensitive: true, step_up: true, audited: true}
+  - {id: "perm.integration:write", name: "Write through an integration", sensitive: false}
+  - {id: "perm.orgs:verify", name: "Verify organizations", sensitive: true, audited: true}
+  - {id: "perm.support:access", name: "Use support access", sensitive: true, audited: true}

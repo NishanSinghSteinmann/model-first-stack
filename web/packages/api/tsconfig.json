@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../node_modules/.tsc/api",
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../node_modules/.tsc/api.tsbuildinfo"
+  },
+  "include": [
+    "src"
+  ],
+  "references": []
+}

@@ -1,0 +1,93 @@
+tables:
+  - id: tbl.note
+    name: note
+    owner: mod.notes
+    rls: self
+    self_column: owner_id
+    retention: account + 30 days
+    status: built
+    columns:
+      - {name: "id", type: "uuid", class: "id"}
+      - {name: "owner_id", type: "uuid", class: "id", immutable: true}
+      - {name: "title", type: "text", class: "personal"}
+      - {name: "body", type: "text", class: "personal"}
+      - {name: "created_at", type: "timestamptz", class: "internal", default: "now()", immutable: true}
+  - id: tbl.organization
+    name: organization
+    owner: mod.orgs
+    rls: org
+    retention: contract end + 10 years
+    columns:
+      - {name: "id", type: "uuid", class: "id"}
+      - {name: "org_id", type: "uuid", class: "id"}
+      - {name: "name", type: "text", class: "public"}
+  - id: tbl.org_member
+    name: org_member
+    owner: mod.orgs
+    rls: org
+    retention: membership + 1 year
+    columns:
+      - {name: "id", type: "uuid", class: "id"}
+      - {name: "org_id", type: "uuid", class: "id", ref: tbl.organization}
+      - {name: "user_id", type: "uuid", class: "id"}
+      - {name: "role", type: "text", class: "internal"}
+  - id: tbl.audit_event
+    name: audit_event
+    owner: mod.platform
+    rls: platform
+    retention: 10 years
+    status: built
+    managed: hand
+    description: "Append only. A trigger forbids update, delete and truncate. Inserts must match the transaction scope."
+    columns:
+      - {name: "id", type: "bigint", class: "id"}
+      - {name: "at", type: "timestamptz", class: "internal"}
+      - {name: "scope_kind", type: "text", class: "internal"}
+      - {name: "principal_id", type: "uuid", class: "id", nullable: true}
+      - {name: "org_id", type: "uuid", class: "id", nullable: true}
+      - {name: "action", type: "text", class: "internal"}
+      - {name: "target", type: "text", class: "internal"}
+      - {name: "request_id", type: "text", class: "internal", nullable: true}
+      - {name: "meta", type: "jsonb", class: "internal"}
+  - id: tbl.idempotency_key
+    name: idempotency_key
+    owner: mod.platform
+    rls: self
+    self_column: principal_id
+    retention: 24 hours
+    status: built
+    managed: hand
+    description: "Stored responses of writes with an Idempotency-Key, per principal."
+    columns:
+      - {name: "principal_id", type: "uuid", class: "id"}
+      - {name: "key", type: "text", class: "internal"}
+      - {name: "fingerprint", type: "text", class: "internal"}
+      - {name: "status", type: "int", class: "internal", nullable: true}
+      - {name: "body", type: "bytea", class: "personal", nullable: true}
+      - {name: "created_at", type: "timestamptz", class: "internal"}
+  - id: tbl.service_key
+    name: service_key
+    owner: mod.platform
+    rls: org
+    retention: revocation + 1 year
+    status: built
+    managed: hand
+    description: "Machine login. The API role cannot read hashes, keys are verified only through app.verify_service_key."
+    columns:
+      - {name: "id", type: "uuid", class: "id"}
+      - {name: "org_id", type: "uuid", class: "id"}
+      - {name: "name", type: "text", class: "business"}
+      - {name: "secret_hash", type: "text", class: "secret"}
+      - {name: "roles", type: "text[]", class: "internal"}
+      - {name: "created_at", type: "timestamptz", class: "internal"}
+      - {name: "expires_at", type: "timestamptz", class: "internal", nullable: true}
+      - {name: "revoked_at", type: "timestamptz", class: "internal", nullable: true}
+
+classes:
+  - {id: "class.public", name: "public"}
+  - {id: "class.id", name: "identifier"}
+  - {id: "class.internal", name: "internal"}
+  - {id: "class.business", name: "business"}
+  - {id: "class.personal", name: "personal"}
+  - {id: "class.financial", name: "financial"}
+  - {id: "class.secret", name: "secret", never_in_response: true}

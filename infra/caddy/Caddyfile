@@ -1,0 +1,130 @@
+{
+	order coraza_waf first
+	order rate_limit before reverse_proxy
+	order respond before handle
+	servers {
+		trusted_proxies static {$TRUSTED_PROXIES:private_ranges}
+		trusted_proxies_strict
+		client_ip_headers X-Forwarded-For
+		timeouts {
+			read_header 5s
+			read_body 15s
+			idle 60s
+		}
+	}
+}
+
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		-Server
+	}
+}
+
+(web_app) {
+	import security_headers
+	header Content-Security-Policy "default-src 'self'; connect-src 'self' {$API_ORIGIN:https://api.localhost} {$STORAGE_ORIGIN:https://storage.localhost}; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+
+	rate_limit {
+		zone web_per_ip {
+			key {client_ip}
+			events 600
+			window 1m
+		}
+	}
+
+	handle /config.json {
+		header Cache-Control "no-store"
+		header Content-Type "application/json"
+		respond `{"apiUrl":"{$API_ORIGIN:https://api.localhost}","authUrl":"{$API_ORIGIN:https://api.localhost}/auth/v1"}` 200
+	}
+
+	handle /assets/* {
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	handle {
+		header Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+{$APP_HOST:app.localhost} {
+	root * /srv/app
+	import web_app
+}
+
+{$COCKPIT_HOST:cockpit.localhost} {
+	root * /srv/cockpit
+	import web_app
+}
+
+{$ADMIN_HOST:admin.localhost} {
+	@outside not client_ip {$ADMIN_ALLOW:private_ranges}
+	respond @outside 404
+	root * /srv/admin
+	import web_app
+}
+
+{$STORAGE_HOST:storage.localhost} {
+	import security_headers
+	request_body {
+		max_size 30MB
+	}
+	reverse_proxy {$STORAGE_UPSTREAM:s3:8333}
+}
+
+{$API_HOST:api.localhost} {
+	import security_headers
+	header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
+
+	request_body {
+		max_size 1MB
+	}
+
+	coraza_waf {
+		load_owasp_crs
+		directives `
+			Include @coraza.conf-recommended
+			Include @crs-setup.conf.example
+			Include @owasp_crs/*.conf
+			SecRuleEngine On
+		`
+	}
+
+	rate_limit {
+		zone per_ip {
+			key {client_ip}
+			events 300
+			window 1m
+		}
+	}
+
+	@internal path /readyz
+	respond @internal 404
+
+	@admin_outside {
+		path /admin /admin/* /v1/admin /v1/admin/*
+		not client_ip {$ADMIN_ALLOW:private_ranges}
+	}
+	respond @admin_outside 404
+
+	handle_path /auth/v1/* {
+		reverse_proxy {$AUTH_UPSTREAM:auth:9999} {
+			header_up Host {upstream_hostport}
+		}
+	}
+
+	handle {
+		reverse_proxy {$API_UPSTREAM:api:8080} {
+			header_up Host {upstream_hostport}
+		}
+	}
+}

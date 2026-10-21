@@ -1,0 +1,12 @@
+folders:
+  - {id: "repo.root", name: "./", description: "Monorepo. AGENTS.md, Makefile."}
+  - {id: "repo.architecture", name: "architecture/", parent: "repo.root", description: "The model. Single source of truth."}
+  - {id: "repo.contracts", name: "contracts/", parent: "repo.root", description: "openapi.yaml, generated."}
+  - {id: "repo.backend", name: "backend/", parent: "repo.root", description: "Go module.", contains: [app.api, app.worker, app.migrate]}
+  - {id: "repo.platform", name: "backend/internal/platform/", parent: "repo.backend", contains: [shell.request, shell.access, shell.data, shell.egress]}
+  - {id: "repo.modules", name: "backend/internal/modules/", parent: "repo.backend", contains: [shell.domain]}
+  - {id: "repo.web", name: "web/", parent: "repo.root", description: "Web apps and shared packages.", contains: [app.web-app, app.cockpit, app.admin]}
+  - {id: "repo.ios", name: "ios/", parent: "repo.root", description: "Swift package for the iOS app.", contains: [app.ios]}
+  - {id: "repo.infra", name: "infra/", parent: "repo.root", description: "Compose, Caddy, Terraform.", contains: [shell.edge]}
+  - {id: "repo.design", name: "design/", parent: "repo.root", description: "tokens.json."}
+  - {id: "repo.portal", name: "portal/", parent: "repo.root", description: "Model viewer, checks, generators, MCP server."}

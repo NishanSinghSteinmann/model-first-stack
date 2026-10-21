@@ -1,0 +1,17 @@
+modules:
+  - id: mod.platform
+    name: Platform
+    shell: shell.domain
+    package: backend/internal/platform
+    description: Health, audit log, idempotency and service keys. Built by hand once, not a feature module.
+  - id: mod.notes
+    name: Notes
+    shell: shell.domain
+    package: backend/internal/modules/notes
+    status: built
+    description: Example feature. Personal notes per user, generated from the model, only the handlers are written by hand.
+  - id: mod.orgs
+    name: Organizations
+    shell: shell.domain
+    package: backend/internal/modules/orgs
+    description: Organizations, members, roles and invitations. Planned, shows how a next slice is modeled.

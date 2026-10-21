@@ -1,0 +1,40 @@
+shells:
+  - id: shell.edge
+    name: ① Edge
+    order: 1
+    package: infra/caddy
+    description: Only way in. TLS, size and rate limits, Coraza WAF with OWASP CRS, admin allow-list.
+    controls: [ctl.tls, ctl.ratelimit, ctl.waf, ctl.admin-allowlist]
+  - id: shell.request
+    name: ② Request
+    order: 2
+    package: backend/internal/platform/request
+    description: Request ID, token or service key to principal, OpenAPI validation, client version, idempotency.
+    controls: [ctl.jwks, ctl.validate, ctl.requestid, ctl.idempotency, ctl.client-version]
+    may_use: [shell.access]
+  - id: shell.access
+    name: ③ Access
+    order: 3
+    package: backend/internal/platform/access
+    description: Route to permission to scope, or 401, 403, 404. Only this package creates a scope.
+    controls: [ctl.policy, ctl.scope, ctl.stepup]
+    may_use: [shell.domain]
+  - id: shell.domain
+    name: ④ Domain
+    order: 4
+    package: backend/internal/modules
+    description: Typed handlers, no HTTP and no SQL by hand. Modules talk only through public interfaces and events.
+    controls: [ctl.moduleboundary]
+    may_use: [shell.data, shell.egress]
+  - id: shell.data
+    name: ⑤ Data
+    order: 5
+    package: backend/internal/platform/data
+    description: Only package with a database driver. Every transaction carries the scope, Postgres enforces row level security.
+    controls: [ctl.dbimport, ctl.rls, ctl.audit]
+  - id: shell.egress
+    name: ⑥ Egress
+    order: 6
+    package: backend/internal/platform/egress
+    description: Only way out. HTTP client with destination allow-list (egress) and object storage through signed URLs (storage).
+    controls: [ctl.egressallow, ctl.signedurls]

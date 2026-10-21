@@ -1,0 +1,159 @@
+{
+  "tables": [
+    {
+      "name": "audit_event",
+      "owner": "mod.platform",
+      "rls": "platform",
+      "managed": "hand",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint"
+        },
+        {
+          "name": "at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "scope_kind",
+          "type": "text"
+        },
+        {
+          "name": "principal_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "org_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "action",
+          "type": "text"
+        },
+        {
+          "name": "target",
+          "type": "text"
+        },
+        {
+          "name": "request_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "meta",
+          "type": "jsonb"
+        }
+      ]
+    },
+    {
+      "name": "idempotency_key",
+      "owner": "mod.platform",
+      "rls": "self",
+      "self_column": "principal_id",
+      "managed": "hand",
+      "columns": [
+        {
+          "name": "principal_id",
+          "type": "uuid"
+        },
+        {
+          "name": "key",
+          "type": "text"
+        },
+        {
+          "name": "fingerprint",
+          "type": "text"
+        },
+        {
+          "name": "status",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "body",
+          "type": "bytea",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "name": "note",
+      "owner": "mod.notes",
+      "rls": "self",
+      "self_column": "owner_id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid"
+        },
+        {
+          "name": "owner_id",
+          "type": "uuid",
+          "immutable": true
+        },
+        {
+          "name": "title",
+          "type": "text"
+        },
+        {
+          "name": "body",
+          "type": "text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "default": "now()",
+          "immutable": true
+        }
+      ]
+    },
+    {
+      "name": "service_key",
+      "owner": "mod.platform",
+      "rls": "org",
+      "managed": "hand",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid"
+        },
+        {
+          "name": "org_id",
+          "type": "uuid"
+        },
+        {
+          "name": "name",
+          "type": "text"
+        },
+        {
+          "name": "secret_hash",
+          "type": "text"
+        },
+        {
+          "name": "roles",
+          "type": "text[]"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "revoked_at",
+          "type": "timestamptz",
+          "nullable": true
+        }
+      ]
+    }
+  ]
+}

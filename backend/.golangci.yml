@@ -1,0 +1,72 @@
+version: "2"
+linters:
+  enable:
+    - depguard
+    - gosec
+    - revive
+    - errorlint
+    - bodyclose
+    - noctx
+    - misspell
+  settings:
+    depguard:
+      rules:
+        portable:
+          deny:
+            - pkg: cloud.google.com/go
+              desc: "portable: no cloud SDKs"
+            - pkg: google.golang.org/api
+              desc: "portable: no cloud SDKs"
+            - pkg: firebase.google.com
+              desc: "portable: no Firebase"
+            - pkg: github.com/golang/mock
+              desc: "dec.no-mocks"
+            - pkg: go.uber.org/mock
+              desc: "dec.no-mocks"
+            - pkg: github.com/stretchr/testify/mock
+              desc: "dec.no-mocks"
+        db-only-in-data:
+          files:
+            - "!**/internal/platform/data/**"
+            - "!**/internal/platform/jobs/**"
+            - "!**/internal/modules/*/store/**"
+          deny:
+            - pkg: github.com/jackc/pgx
+              desc: "Only the data shell talks to the database"
+            - pkg: github.com/riverqueue/river
+              desc: "Only the jobs package talks to River"
+            - pkg: github.com/pressly/goose
+              desc: "Only the data shell migrates"
+            - pkg: database/sql
+              desc: "Only the data shell talks to the database"
+        storage-only-in-storage:
+          files:
+            - "!**/internal/platform/storage/**"
+          deny:
+            - pkg: github.com/minio/minio-go
+              desc: "Only platform/storage talks to object storage"
+        test-helpers-only-in-tests:
+          files:
+            - "$all"
+            - "!$test"
+            - "!**/requesttest/**"
+            - "!**/accesstest/**"
+          deny:
+            - pkg: github.com/example/app/backend/internal/platform/request/requesttest
+              desc: "Test issuers never in production code"
+            - pkg: github.com/example/app/backend/internal/platform/access/accesstest
+              desc: "Test scopes never in production code"
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters: [noctx, gosec]
+formatters:
+  enable:
+    - gofmt
+    - goimports

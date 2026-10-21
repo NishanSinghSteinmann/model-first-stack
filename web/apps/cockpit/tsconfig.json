@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../node_modules/.tsc/app-cockpit",
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../node_modules/.tsc/app-cockpit.tsbuildinfo"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../packages/shell"
+    },
+    {
+      "path": "../../packages/ui"
+    },
+    {
+      "path": "../../packages/i18n"
+    }
+  ]
+}

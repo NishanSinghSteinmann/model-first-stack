@@ -1,0 +1,371 @@
+openapi: 3.0.3
+info:
+  title: Model-first Stack API
+  version: 0.0.0
+  description: Generated from architecture/ with make generate. Do not edit by hand.
+paths:
+  /livez:
+    get:
+      operationId: livez
+      tags:
+        - platform
+      summary: GET /livez
+      security: []
+      x-app:
+        route: route.livez
+        kind: public
+        public: Liveness probe without data
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LivezResponse"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /v1/me/notes:
+    get:
+      operationId: meNotesList
+      tags:
+        - notes
+      summary: GET /me/notes
+      parameters:
+        - name: after
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 200
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      security:
+        - bearer: []
+      x-app:
+        route: route.me.notes.list
+        kind: self
+        permission: self:read
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeNotesListResponse"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+    post:
+      operationId: meNotesCreate
+      tags:
+        - notes
+      summary: POST /me/notes
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{8,128}$
+      security:
+        - bearer: []
+      x-app:
+        route: route.me.notes.create
+        kind: self
+        permission: self:write
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeNotesCreateResponse"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeNotesCreateRequest"
+  /v1/me/notes/{note}:
+    get:
+      operationId: meNotesGet
+      tags:
+        - notes
+      summary: GET /me/notes/{note}
+      parameters:
+        - name: note
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - bearer: []
+      x-app:
+        route: route.me.notes.get
+        kind: self
+        permission: self:read
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeNotesGetResponse"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+    patch:
+      operationId: meNotesUpdate
+      tags:
+        - notes
+      summary: PATCH /me/notes/{note}
+      parameters:
+        - name: note
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - bearer: []
+      x-app:
+        route: route.me.notes.update
+        kind: self
+        permission: self:write
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeNotesUpdateResponse"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeNotesUpdateRequest"
+  /readyz:
+    get:
+      operationId: readyz
+      tags:
+        - platform
+      summary: GET /readyz
+      security: []
+      x-app:
+        route: route.readyz
+        kind: public
+        public: Readiness probe, names failed checks only, blocked at the edge
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadyzResponse"
+        "503":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadyzResponse"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Problem:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          x-extensible-enum:
+            - invalid_idempotency_key
+            - invalid_request
+            - token_invalid
+            - unauthenticated
+            - forbidden
+            - step_up_required
+            - not_found
+            - idempotency_in_progress
+            - body_too_large
+            - idempotency_mismatch
+            - client_outdated
+            - internal
+            - unavailable
+          description: New codes may be added at any time, clients treat unknown codes like internal.
+        message:
+          type: string
+        request_id:
+          type: string
+    LivezResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    MeNotesListItem:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        body:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - body
+        - created_at
+    MeNotesListResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+        - next
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MeNotesListItem"
+        next:
+          type: string
+          nullable: true
+    MeNotesCreateResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        body:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - body
+        - created_at
+    MeNotesCreateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+      required:
+        - title
+        - body
+    MeNotesGetResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        body:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - body
+        - created_at
+    MeNotesUpdateResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        body:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - body
+        - created_at
+    MeNotesUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+    ReadyzResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+        failed:
+          type: array
+          items:
+            type: string
+      required:
+        - status
+        - failed

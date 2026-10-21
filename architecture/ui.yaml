@@ -1,0 +1,11 @@
+screens:
+  - {id: "screen.web.notes", name: "Notes", app: "app.web-app", path: "/notes", routes: [route.me.notes.list, route.me.notes.create, route.me.notes.update], status: "planned"}
+  - {id: "screen.cockpit.members", name: "Members", app: "app.cockpit", path: "/{org}/members", routes: [route.orgs.members.list], status: "planned"}
+
+tokens:
+  - {id: "token.color", name: "Colors", source: "design/tokens.json", targets: [app.web-app, app.cockpit, app.admin, app.ios]}
+  - {id: "token.space", name: "Spacing and radius", source: "design/tokens.json", targets: [app.web-app, app.cockpit, app.admin, app.ios]}
+
+glossary:
+  - {id: term.note, name: "Note", english: "note", forbidden: [memo, entry]}
+  - {id: term.org, name: "Organization", english: "organization", forbidden: [tenant, company]}

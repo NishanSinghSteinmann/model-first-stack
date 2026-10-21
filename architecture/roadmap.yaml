@@ -1,0 +1,12 @@
+goals:
+  - {id: goal.less-code, name: "Less hand-written code", description: "Everything that follows from a contract is generated."}
+  - {id: goal.safe, name: "Safe by construction", description: "Every rule has a check that runs in CI."}
+
+phases:
+  - {id: phase.1, name: "1 · Foundation", order: 1, description: "Shells, generators, local stack, CI."}
+  - {id: phase.2, name: "2 · Features", order: 2, description: "Slice by slice through model, generate, implement, verify."}
+
+steps:
+  - {id: step.1-1, name: "Shells and generators", phase: phase.1, goals: [goal.safe, goal.less-code], status: built, output: "Six shells, make generate, CI gates.", gate: "make check and CI green"}
+  - {id: step.1-2, name: "Example feature", phase: phase.1, goals: [goal.less-code], status: built, output: "Notes module, four routes, one table.", gate: "Route matrix and schema test green"}
+  - {id: step.2-1, name: "Organizations", phase: phase.2, goals: [goal.safe], status: planned, output: "Organizations, members, roles.", gate: "Release 0.2 gates green"}

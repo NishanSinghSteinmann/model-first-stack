@@ -1,0 +1,121 @@
+name: app
+
+x-backend: &backend
+  build:
+    context: ../../backend
+  environment: &backend-env
+    APP_ENV: local
+    DATABASE_URL: postgres://app:app@postgres:5432/app?sslmode=disable
+    AUTH_JWKS_URL: http://auth:9999/.well-known/jwks.json
+    AUTH_ISSUER: https://api.localhost/auth/v1
+    CORS_ORIGINS: https://app.localhost:8443,https://cockpit.localhost:8443,https://admin.localhost:8443
+    MIN_CLIENT_VERSIONS: ios=1.0.0,web=0.1.0
+    STORAGE_ENDPOINT: http://s3:8333
+    STORAGE_PUBLIC_URL: https://storage.localhost:8443
+    STORAGE_REGION: us-east-1
+    STORAGE_BUCKET: files
+    STORAGE_ACCESS_KEY: local
+    STORAGE_SECRET_KEY: local-only
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+    s3-init:
+      condition: service_completed_successfully
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: owner
+      POSTGRES_PASSWORD: owner
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U owner -d app"]
+      interval: 2s
+      retries: 30
+
+  migrate:
+    build:
+      context: ../../backend
+    command: ["migrate"]
+    environment:
+      APP_ENV: local
+      DATABASE_MIGRATE_URL: postgres://owner:owner@postgres:5432/app?sslmode=disable
+      DB_APP_PASSWORD: app
+      DB_AUTH_PASSWORD: auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *backend
+    command: ["api"]
+
+  worker:
+    <<: *backend
+    command: ["worker"]
+
+  auth:
+    image: supabase/auth:v2.197.0
+    env_file: .env
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      PORT: "9999"
+      API_EXTERNAL_URL: https://api.localhost/auth/v1
+      GOTRUE_SITE_URL: https://app.localhost:8443
+      GOTRUE_URI_ALLOW_LIST: https://app.localhost:8443/**,https://cockpit.localhost:8443/**,https://admin.localhost:8443/**
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:auth@postgres:5432/app?sslmode=disable&search_path=auth
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_ISSUER: https://api.localhost/auth/v1
+      GOTRUE_JWT_EXP: "3600"
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "true"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "false"
+      GOTRUE_SMTP_HOST: mailpit
+      GOTRUE_SMTP_PORT: "1025"
+      GOTRUE_SMTP_ADMIN_EMAIL: noreply@app.local
+      GOTRUE_SMTP_SENDER_NAME: App local
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  s3:
+    image: chrislusf/seaweedfs:4.47
+    command: ["server", "-dir=/data", "-s3", "-s3.port=8333", "-s3.config=/etc/s3.json"]
+    volumes:
+      - s3data:/data
+      - ./s3.json:/etc/s3.json:ro
+
+  s3-init:
+    image: chrislusf/seaweedfs:4.47
+    entrypoint: ["sh", "-c", "until echo 's3.bucket.create -name files' | weed shell -master=s3:9333 >/dev/null 2>&1 && echo 's3.bucket.list' | weed shell -master=s3:9333 2>/dev/null | grep -q files; do sleep 1; done"]
+    depends_on:
+      - s3
+
+  mailpit:
+    image: axllent/mailpit:v1.31.6
+    ports:
+      - "127.0.0.1:8025:8025"
+
+  edge:
+    build:
+      context: ../..
+      dockerfile: infra/caddy/Dockerfile
+    environment:
+      API_HOST: api.localhost
+      API_ORIGIN: https://api.localhost:8443
+      API_UPSTREAM: api:8080
+      AUTH_UPSTREAM: auth:9999
+      STORAGE_ORIGIN: https://storage.localhost:8443
+    ports:
+      - "127.0.0.1:8443:443"
+    depends_on:
+      - api
+      - auth
+
+volumes:
+  pgdata:
+  s3data:

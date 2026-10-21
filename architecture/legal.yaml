@@ -1,0 +1,3 @@
+processing:
+  - {id: "proc.account", name: "User account and notes", basis: "GDPR art. 6(1)(b)", tables: [tbl.note]}
+  - {id: "proc.security", name: "Security log and idempotency", basis: "GDPR art. 6(1)(f)", tables: [tbl.audit_event, tbl.idempotency_key]}

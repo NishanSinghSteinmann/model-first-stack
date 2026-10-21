@@ -1,0 +1,6 @@
+contracts:
+  - {id: contract.openapi, name: "OpenAPI", source: contracts/openapi.yaml, description: "Generated from routes.yaml, access.yaml, fields.yaml and database.yaml.", targets: [app.api, app.web-app, app.cockpit, app.admin, app.ios]}
+  - {id: contract.ts-client, name: "TypeScript client", source: web/packages/api, targets: [app.web-app, app.cockpit, app.admin]}
+  - {id: contract.swift-client, name: "Swift client", source: ios/Kit, targets: [app.ios]}
+  - {id: contract.error-format, name: "Error format", source: architecture/errors.yaml, description: "Code, readable message, request ID. Codes are an extensible list.", targets: [app.api, app.web-app, app.ios]}
+  - {id: contract.tokens, name: "Design tokens", source: design/tokens.json, targets: [app.web-app, app.cockpit, app.admin, app.ios]}

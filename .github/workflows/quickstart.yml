@@ -1,0 +1,27 @@
+name: Quickstart
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths: ["infra/compose/**", "infra/caddy/**", "backend/Dockerfile", "backend/internal/platform/**", "web/**", "Makefile", "tools/**", ".github/workflows/quickstart.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dev:
+    name: make dev from a fresh checkout
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version-file: tools/devkeys/go.mod
+      - run: make dev
+      - run: tools/smoke-local.sh
+      - if: failure()
+        run: docker compose -f infra/compose/compose.yaml logs --tail 50
+      - if: always()
+        run: make dev-down

@@ -1,0 +1,27 @@
+devices:
+  - {id: "dev.phone", name: "Phone", description: "iOS device running the mobile app."}
+  - {id: "dev.browser", name: "Browser", description: "Desktop or mobile browser."}
+
+actors:
+  - id: actor.user
+    name: End user
+    description: Uses the web app or the iOS app, may start as a guest.
+    uses: [dev.phone, dev.browser]
+    clients: [app.ios, app.web-app]
+  - id: actor.org-member
+    name: Organization member
+    description: Works in the cockpit for one or more organizations.
+    uses: [dev.browser]
+    clients: [app.cockpit]
+  - id: actor.staff
+    name: Platform staff
+    description: Operates the platform through the admin app, always with a second factor.
+    uses: [dev.browser]
+    clients: [app.admin]
+  - id: actor.integration
+    name: Integration
+    description: Partner system calling the API with a service key bound to one organization.
+
+boundaries:
+  - {id: "boundary.internet", name: "Internet", description: "Everything outside the edge."}
+  - {id: "boundary.private", name: "Private network", description: "API, auth, database and storage, reachable only through the edge."}

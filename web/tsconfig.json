@@ -1,0 +1,29 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/api"
+    },
+    {
+      "path": "packages/auth"
+    },
+    {
+      "path": "packages/i18n"
+    },
+    {
+      "path": "packages/ui"
+    },
+    {
+      "path": "packages/shell"
+    },
+    {
+      "path": "apps/app"
+    },
+    {
+      "path": "apps/cockpit"
+    },
+    {
+      "path": "apps/admin"
+    }
+  ]
+}

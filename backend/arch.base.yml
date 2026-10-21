@@ -1,0 +1,64 @@
+version: 3
+workdir: .
+excludeFiles:
+  - "^.*_test\\.go$"
+allow:
+  depOnAnyVendor: true
+components:
+  cmd:
+    in: cmd/**
+  app:
+    in: internal/platform/app
+  config:
+    in: internal/platform/config
+  logging:
+    in: internal/platform/logging
+  health:
+    in: internal/platform/health
+  server:
+    in: internal/platform/server
+  problem:
+    in: internal/platform/problem
+  request:
+    in: internal/platform/request
+  requesttest:
+    in: internal/platform/request/requesttest
+  access:
+    in: internal/platform/access
+  accesstest:
+    in: internal/platform/access/accesstest
+  data:
+    in: internal/platform/data
+  egress:
+    in: internal/platform/egress
+  jobs:
+    in: internal/platform/jobs
+  telemetry:
+    in: internal/platform/telemetry
+  storage:
+    in: internal/platform/storage
+  api:
+    in: internal/api
+deps:
+  cmd:
+    mayDependOn: [app]
+  app:
+    mayDependOn: [api, config, logging, health, server, request, access, data, jobs, telemetry, storage]
+  api:
+    mayDependOn: [access, problem, request]
+  health:
+    mayDependOn: [api]
+  logging:
+    mayDependOn: [config]
+  request:
+    mayDependOn: [problem]
+  requesttest:
+    mayDependOn: [request]
+  access:
+    mayDependOn: [problem, request]
+  accesstest:
+    mayDependOn: [access, request, requesttest]
+  data:
+    mayDependOn: [access, request]
+  jobs:
+    mayDependOn: [access]

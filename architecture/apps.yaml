@@ -1,0 +1,62 @@
+apps:
+  - id: app.ios
+    name: iOS app
+    kind: client
+    client: ios
+    status: planned
+    description: SwiftUI app using the generated Swift client from ios/Kit.
+  - id: app.web-app
+    name: Web app
+    kind: web
+    client: web
+    domain: app.example.com
+    status: built
+    description: End-user web app (web/apps/app).
+  - id: app.cockpit
+    name: Cockpit
+    kind: web
+    client: web
+    domain: cockpit.example.com
+    status: built
+    description: Back office for organization members (web/apps/cockpit).
+  - id: app.admin
+    name: Admin
+    kind: web
+    client: web
+    domain: admin.example.com
+    status: built
+    description: Platform administration, reachable only from allow-listed IPs (web/apps/admin).
+  - id: app.edge
+    name: Edge (Caddy)
+    kind: container
+    status: built
+    description: Single entry point with TLS, WAF, rate limits, admin allow-list and the web apps.
+  - id: app.api
+    name: API
+    kind: container
+    status: built
+    description: Go binary in mode api.
+  - id: app.worker
+    name: Worker
+    kind: container
+    status: built
+    description: Go binary in mode worker, only in production. Other environments run the drain job.
+  - id: app.migrate
+    name: Migrate
+    kind: job
+    status: built
+    description: Go binary in mode migrate. Ensures database roles, then applies migrations.
+  - id: app.auth
+    name: Supabase Auth
+    kind: container
+    status: built
+    description: Self-hosted Supabase Auth (GoTrue). Guests, email codes, Apple and Google.
+  - id: app.postgres
+    name: Postgres
+    kind: container
+    status: built
+  - id: app.storage
+    name: Object storage
+    kind: container
+    status: built
+    description: S3-compatible storage. SeaweedFS locally, a cloud bucket in staging and production.

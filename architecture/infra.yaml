@@ -1,0 +1,10 @@
+environments:
+  - {id: "env.local", name: "Local", description: "Docker Compose on the laptop. make dev.", runs: [app.edge, app.api, app.worker, app.auth, app.postgres, app.storage], domain: "localhost", deploy: "make dev"}
+  - {id: "env.staging", name: "Staging", description: "Optional. infra/terraform/gcp-staging deploys to Cloud Run on every green merge to main.", runs: [app.edge, app.api, app.auth], domain: "staging.example.com", deploy: "automatic on main"}
+  - {id: "env.prod", name: "Production", description: "Your choice. The same images, released from a version tag.", runs: [app.edge, app.api, app.worker, app.auth], domain: "example.com", deploy: "release tag"}
+
+secrets:
+  - {id: "sec.db", name: "Database password of the app role", used_by: [app.api, app.worker], store: "Secret manager, injected as environment variable"}
+  - {id: "sec.db-migrate", name: "Database password of the migration role", used_by: [app.migrate], store: "Secret manager, injected as environment variable"}
+  - {id: "sec.jwt", name: "Supabase JWT signing keys", used_by: [app.auth], store: "Secret manager, injected as environment variable"}
+  - {id: "sec.storage", name: "Object storage keys", used_by: [app.api], store: "Secret manager, injected as environment variable"}

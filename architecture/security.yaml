@@ -1,0 +1,40 @@
+controls:
+  - {id: "ctl.tls", name: "TLS only", shell: "shell.edge"}
+  - {id: "ctl.ratelimit", name: "Size and rate limits", shell: "shell.edge", check: "check.edge"}
+  - {id: "ctl.waf", name: "Coraza with OWASP CRS", shell: "shell.edge", check: "check.edge"}
+  - {id: "ctl.admin-allowlist", name: "Admin only from allow-listed IPs, spoofed X-Forwarded-For ignored", shell: "shell.edge", check: "check.edge"}
+  - {id: "ctl.requestid", name: "Request ID in every log line and error", shell: "shell.request"}
+  - {id: "ctl.jwks", name: "Tokens verified against the Supabase JWKS, service keys against hashes", shell: "shell.request"}
+  - {id: "ctl.validate", name: "OpenAPI validation, unknown fields rejected", shell: "shell.request", check: "check.generate"}
+  - {id: "ctl.idempotency", name: "Idempotency-Key for writes", shell: "shell.request"}
+  - {id: "ctl.client-version", name: "Outdated clients get 426", shell: "shell.request", check: "check.quickstart"}
+  - {id: "ctl.policy", name: "Every route has a generated rule", shell: "shell.access", check: "check.role-matrix"}
+  - {id: "ctl.scope", name: "Only the access shell creates a scope", shell: "shell.access", check: "check.arch"}
+  - {id: "ctl.stepup", name: "Sensitive permissions need a fresh second factor", shell: "shell.access", check: "check.role-matrix"}
+  - {id: "ctl.moduleboundary", name: "Modules use only platform packages, their store and allowed modules", shell: "shell.domain", check: "check.arch"}
+  - {id: "ctl.dbimport", name: "Only the data shell imports the database driver", shell: "shell.data", check: "check.depguard"}
+  - {id: "ctl.rls", name: "Forced row level security on every table", shell: "shell.data", check: "check.schema"}
+  - {id: "ctl.audit", name: "Append-only audit log", shell: "shell.data"}
+  - {id: "ctl.egressallow", name: "Outbound HTTP only to allow-listed hosts", shell: "shell.egress"}
+  - {id: "ctl.signedurls", name: "Files only through short-lived signed URLs, type and size signed", shell: "shell.egress"}
+
+checks:
+  - {id: "check.model", name: "make check", description: "Model references, scopes, schemas, idempotency, retention."}
+  - {id: "check.generate", name: "make generate-check", description: "Generated code is up to date."}
+  - {id: "check.breaking", name: "oasdiff breaking", description: "No breaking changes in /v1."}
+  - {id: "check.role-matrix", name: "Route matrix", description: "Generated tests for every role, route and foreign organization."}
+  - {id: "check.schema", name: "TestSchemaMatchesModel", description: "Migrations match the model, RLS enabled and forced."}
+  - {id: "check.arch", name: "go-arch-lint", description: "Generated import rules for shells and modules."}
+  - {id: "check.depguard", name: "depguard", description: "Forbidden imports per package."}
+  - {id: "check.edge", name: "infra/caddy/test.sh", description: "Edge behaviour: allow-list, spoofed headers, blocked probes, WAF."}
+  - {id: "check.quickstart", name: "Quickstart workflow", description: "make dev from a fresh checkout plus smoke checks."}
+  - {id: "check.gitleaks", name: "Gitleaks", description: "No secrets in the repository."}
+  - {id: "check.vuln", name: "govulncheck", description: "Known vulnerabilities in Go dependencies."}
+  - {id: "check.trivy", name: "Trivy", description: "Image and Terraform scans."}
+  - {id: "check.migrations", name: "squawk", description: "Safe migrations."}
+
+threats:
+  - {id: "threat.tenant", name: "Reading another organization's data", mitigated_by: [ctl.policy, ctl.rls, ctl.scope]}
+  - {id: "threat.token", name: "Forged or replayed tokens", mitigated_by: [ctl.jwks, ctl.stepup]}
+  - {id: "threat.injection", name: "Injection and malformed input", mitigated_by: [ctl.waf, ctl.validate]}
+  - {id: "threat.ssrf", name: "Server-side request forgery", mitigated_by: [ctl.egressallow]}

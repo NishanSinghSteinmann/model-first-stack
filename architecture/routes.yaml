@@ -1,0 +1,9 @@
+routes:
+  - {id: "route.livez", method: "GET", path: "/livez", module: "mod.platform", public: "Liveness probe without data", callers: [app.edge], response: [status], unversioned: true, status: built}
+  - {id: "route.readyz", method: "GET", path: "/readyz", module: "mod.platform", public: "Readiness probe, names failed checks only, blocked at the edge", callers: [app.edge], response: [status, failed], also: [503], unversioned: true, status: built}
+  - {id: "route.me.notes.list", method: "GET", path: "/me/notes", module: "mod.notes", permission: "perm.self:read", reads: [tbl.note], callers: [app.web-app, app.ios], list: true, response: [id, title, body, created_at], status: built}
+  - {id: "route.me.notes.create", method: "POST", path: "/me/notes", module: "mod.notes", permission: "perm.self:write", reads: [tbl.note], callers: [app.web-app, app.ios], request: [title, body], response: [id, title, body, created_at], idempotency: "Idempotency-Key", status: built}
+  - {id: "route.me.notes.get", method: "GET", path: "/me/notes/{note}", module: "mod.notes", permission: "perm.self:read", reads: [tbl.note], callers: [app.web-app, app.ios], response: [id, title, body, created_at], status: built}
+  - {id: "route.me.notes.update", method: "PATCH", path: "/me/notes/{note}", module: "mod.notes", permission: "perm.self:write", reads: [tbl.note], callers: [app.web-app, app.ios], request: [title, body], response: [id, title, body, created_at], idempotency: "natural", status: built}
+  - {id: "route.orgs.get", method: "GET", path: "/orgs/{org}", module: "mod.orgs", permission: "perm.org:read", reads: [tbl.organization], callers: [app.cockpit], response: [id, name]}
+  - {id: "route.orgs.members.list", method: "GET", path: "/orgs/{org}/members", module: "mod.orgs", permission: "perm.members:manage", reads: [tbl.org_member], callers: [app.cockpit], list: true, response: [user_id, role]}

@@ -1,0 +1,9 @@
+paths:
+  - id: deploy.backend
+    name: Backend and web
+    description: Trunk based. Merges to main deploy to staging, a version tag deploys to production. One image per commit, promoted unchanged.
+    steps:
+      - {id: "step.pr", name: "Pull request", gate: "check.model", description: "All CI gates green."}
+      - {id: "step.build", name: "Build, scan, sign", gate: "check.trivy", description: "SBOM, provenance and cosign signature."}
+      - {id: "step.migrate", name: "Migrate", runs: "app.migrate", target: "env.staging"}
+      - {id: "step.staging", name: "Staging", target: "env.staging", description: "Automatic after every green merge to main."}

@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../node_modules/.tsc/shell",
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../node_modules/.tsc/shell.tsbuildinfo"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../api"
+    },
+    {
+      "path": "../auth"
+    },
+    {
+      "path": "../i18n"
+    },
+    {
+      "path": "../ui"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+errors:
+  - {id: "err.invalid_request", name: "invalid_request", http: 400, message: "Invalid request"}
+  - {id: "err.invalid_idempotency_key", name: "invalid_idempotency_key", http: 400, message: "Invalid Idempotency-Key"}
+  - {id: "err.unauthenticated", name: "unauthenticated", http: 401, message: "Sign-in required"}
+  - {id: "err.token_invalid", name: "token_invalid", http: 401, message: "Invalid credentials"}
+  - {id: "err.forbidden", name: "forbidden", http: 403, message: "Not allowed"}
+  - {id: "err.step_up_required", name: "step_up_required", http: 403, message: "Please confirm with your second factor"}
+  - {id: "err.not_found", name: "not_found", http: 404, message: "Not found"}
+  - {id: "err.idempotency_in_progress", name: "idempotency_in_progress", http: 409, message: "Request is still being processed"}
+  - {id: "err.body_too_large", name: "body_too_large", http: 413, message: "Request too large"}
+  - {id: "err.idempotency_mismatch", name: "idempotency_mismatch", http: 422, message: "Idempotency-Key was used for a different request"}
+  - {id: "err.client_outdated", name: "client_outdated", http: 426, message: "Please update the app"}
+  - {id: "err.internal", name: "internal", http: 500, message: "Internal error"}
+  - {id: "err.unavailable", name: "unavailable", http: 503, message: "Temporarily unavailable"}

@@ -1,0 +1,11 @@
+{
+  "name": "@app/auth",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@supabase/auth-js": "2.117.2"
+  }
+}

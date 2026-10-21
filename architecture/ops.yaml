@@ -1,0 +1,7 @@
+alerts:
+  - {id: "alert.jobs-failed", name: "Failed jobs", watches: "app.worker", runbook: rb.jobs}
+  - {id: "alert.5xx", name: "5xx rate above 1 %", watches: "app.api", runbook: rb.rollback}
+
+runbooks:
+  - {id: "rb.jobs", name: "Failed or discarded jobs", description: "Inspect discarded River jobs, fix the cause, retry."}
+  - {id: "rb.rollback", name: "Roll back a release", description: "Deploy the previous image digest."}
