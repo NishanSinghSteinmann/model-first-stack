@@ -63,4 +63,4 @@ The example module `notes` (four routes, one table) shows the whole loop. `plann
 
 ## License
 
-The code in this repository is MIT licensed, see `LICENSE`. Dependencies, container images and tools keep their own licenses. Check them for your use, see `THIRD_PARTY.md`.
+Copyright (c) 2026 Nishan Singh Steinmann. All rights reserved. This repository is a reference project, published for viewing only. Using, copying or redistributing it requires prior written permission, see `LICENSE`. Dependencies, container images and tools keep their own licenses, see `THIRD_PARTY.md`.

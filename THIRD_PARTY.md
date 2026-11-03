@@ -1,6 +1,6 @@
 # Third-party licenses
 
-The MIT license of this repository covers only the code written for it. Everything below keeps its own license. Review these licenses for your use; this list is generated and is not legal advice.
+The copyright notice in `LICENSE` (all rights reserved) covers only the code written for this repository. Everything below keeps its own license. Review these licenses for your use; this list is generated and is not legal advice.
 
 Regenerate with `make licenses`.
 

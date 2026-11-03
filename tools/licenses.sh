@@ -20,7 +20,7 @@ fi
 {
   echo "# Third-party licenses"
   echo
-  echo "The MIT license of this repository covers only the code written for it. Everything below keeps its own license. Review these licenses for your use; this list is generated and is not legal advice."
+  echo "The copyright notice in `LICENSE` (all rights reserved) covers only the code written for this repository. Everything below keeps its own license. Review these licenses for your use; this list is generated and is not legal advice."
   echo
   echo "Regenerate with \`make licenses\`."
   echo
